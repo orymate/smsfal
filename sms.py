@@ -43,13 +43,14 @@ def smslist(tty):
     tty.readlines()
 
     tty.write('AT+CMGL=1\r')
+    tty.write('AT+CMGL\r')
     out = tty.readlines()
     ret = []
     toremove = []
     lastid = None
     for i in out:
         if i.startswith('OK'):
-            break
+            lastid = None
         elif i.strip() == '' or i.startswith("AT"):
             continue
         elif i.startswith('+CMGL:'):
