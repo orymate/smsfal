@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from messaging.sms import SmsDeliver
-from datetime import date
+import datetime
 import sys
 import serial
 import pickle
@@ -18,13 +18,26 @@ from cgi import escape
 ttypath = "/dev/ttyUSB2"
 contact = """
     <ul id="contact">
-        <li>SMS-szám: +36 20 264 45</li>
-        <!--<li>062026445@sms.pgsm.hu</li>-->
+        <li>SMS-szám: +36 20 264 7145</li>
+        <!--<li>06202647145@sms.pgsm.hu</li>-->
     </ul>"""
 
-datafile = "smsfal-%s" % (date.today())
+datafile = "smsfal-%s" % (datetime.date.today())
 
 
+def humandate(d):
+    dif = datetime.datetime.utcnow() - d
+    if dif.seconds > 24 * 3600:
+        return '%s UTC' % d
+    elif dif.seconds > 3600:
+        d = datetime.datetime.utcnow() - d
+        return '%d óra %d perce' % (d.seconds/3600, d.seconds / 60 % 60)
+    else:
+        d = datetime.datetime.utcnow() - d
+        if d.seconds < 60:
+            return 'most'
+        else:
+            return '%d perce' % (d.seconds / 60)
 
 def colorhash(number):
     number = int(number)
