@@ -13,6 +13,7 @@ import atexit
 import thread
 from cgi import escape
 
+# ------ CONFIG
 
 #ttypath = "/dev/rfcomm2"
 ttypath = "/dev/ttyUSB2"
@@ -24,6 +25,24 @@ contact = """
 
 datafile = "smsfal-%s" % (datetime.date.today())
 
+# -----
+
+class WebView(webkit.WebView):
+    def __init__(self):
+        webkit.WebView.__init__(self)
+        self.connect_after("populate-popup", self.populate_popup)
+
+    def populate_popup(self, view, menu):
+        save = gtk.ImageMenuItem(gtk.STOCK_SAVE)
+        save.connect('activate', save_log, view)
+        menu.append(save)
+
+        menu.show_all()
+        return False
+
+def save_log(menu_item, web_view):
+    global do_save_log
+    do_save_log = True
 
 def humandate(d):
     dif = datetime.datetime.utcnow() - d
@@ -124,7 +143,7 @@ def quit_event(self, *args):
     gtk.main_quit()
 
 def browsermain():
-    view = webkit.WebView() 
+    view = WebView() 
 
     sw = gtk.ScrolledWindow() 
     sw.add(view) 
@@ -157,8 +176,15 @@ def pollermain():
 
     render(html[1], texts)
 
-
+    log_count = 0
     while not quit:
+        if do_save_log:
+            log_count = log_count + 1
+            logf = open("%s-%d-%d.log" % (datafile, os.getpid(), log_count), "w")
+            for i in texts:
+                logf.write("%s\t%s\t%s\n" % i)
+            logf.close()
+
         new = smslist(tty)
         for i in new:
             texts.append((i.data['date'], i.data['number'], i.data['text']))
@@ -177,6 +203,7 @@ def pollermain():
 
     tty.close()
 
+do_save_log = False
 quit = False
 
 html = tempfile.mkstemp(".html")
