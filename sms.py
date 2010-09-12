@@ -13,10 +13,17 @@ import atexit
 import thread
 from cgi import escape
 
+have_qr = True
+try:
+    from PyQRNative import *
+except:
+    have_qr = False
+
 # ------ CONFIG
 
 #ttypath = "/dev/rfcomm2"
 ttypath = "/dev/ttyUSB2"
+phonenum = "+36202647145"
 contact = """
     <ul id="contact">
         <li>SMS-szám: +36 20 264 7145</li>
@@ -121,6 +128,10 @@ def render(outfile, texts=None, empty=False):
         if out == '':
             return render(outfile=outfile, empty='nincs üzenet')
 
+    qr = ""
+    if have_qr:
+        qr = '<p id="qr"><img src="file://%s" alt="" /></p>' % qr_file
+
     out = """<!DOCTYPE html>
     <html lang="en">
         <head>
@@ -139,10 +150,12 @@ def render(outfile, texts=None, empty=False):
                 text-align: center; background-color: #000; color: #fff;
                 margin: 0; padding: .2em;}
                 #contact li {display: inline;margin-right: 2em;}
+                #qr {text-align: center;}
+                #qr img {width: 50%;}
             </style>
         </head>
         <body onload="setTimeout(\'location.reload()\', 5000)">
-        """ + contact + out + "</body></html>"
+        """ + contact + out + qr + "</body></html>"
     f = open(outfile, "wb")
     f.write(out)
     f.close()
@@ -184,6 +197,12 @@ def pollermain():
         pickle.dump([], f)
         f.close()
 
+    if have_qr:
+        qr = QRCode(1, QRErrorCorrectLevel.L)
+        qr.addData("TEL:%s" % phonenum)
+        qr.make()
+        qr.makeImage().save(qr_file)
+
     render(html[1], texts)
 
     log_count = 0
@@ -216,6 +235,10 @@ def pollermain():
 
 do_save_log = False
 quit = False
+
+qr_file = tempfile.mkstemp(".png")
+qr_file = qr_file[1]
+atexit.register(os.unlink, qr_file)
 
 html = tempfile.mkstemp(".html")
 atexit.register(os.unlink, html[1])
