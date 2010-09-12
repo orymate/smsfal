@@ -131,7 +131,7 @@ def render(outfile, texts=None, empty=False):
                 margin-bottom: -1.2em;padding: .1em;}
                 .sender {float: left;}
                 .sent {float: right;} 
-                .msg {clear: both; margin: 0; padding: .5em;
+                .msg {clear: both; margin: 0; padding: .5em; overflow: hidden;
                 background-color:#fff;border-radius: 0 0 .3em .3em; padding-top: 1em;} 
                 .item { margin:.5em;padding: .1em; border-radius: .3em; background-color: #ccc;} 
                 body,div {margin:0; padding: 0;font-size: 1cm;}
@@ -211,8 +211,7 @@ def pollermain():
                 pickle.dump(texts, f)
                 f.close()
 
-            render(html[1], texts=texts)
-
+        render(html[1], texts=texts)
     tty.close()
 
 do_save_log = False
