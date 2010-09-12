@@ -9,6 +9,7 @@ import gtk
 import webkit 
 import tempfile
 import os
+import signal
 from cgi import escape
 
 
@@ -16,11 +17,18 @@ from cgi import escape
 ttypath = "/dev/ttyUSB2"
 contact = """
     <ul id="contact">
-        <li>SMS-szám: +36 20 264 7145</li>
-        <!--<li>06202647145@sms.pgsm.hu</li>-->
+        <li>SMS-szám: +36 20 264 45</li>
+        <!--<li>062026445@sms.pgsm.hu</li>-->
     </ul>"""
 
 datafile = "smsfal-%s" % (date.today())
+
+
+
+def colorhash(number):
+    number = int(number)
+    c = (60, (number % 1747) % 101, (number % 1847) % 101)
+    return "hsl(%d, %d%%, %d%%)" % c
 
 def smsremove(tty, msgid):
     try:
@@ -55,19 +63,22 @@ def smslist(tty):
                 print "Can't parse: " + i.rstrip()
     return ret
 
-def render(texts, outfile):
+def render(outfile, texts=None, empty=False):
     out = ''
-    for i in texts:
-        
-        out = ("""
-        <div class="item"> 
-            <div class="sent">%s</div>
-            <div class="sender">%s</div>
+    if empty != False:
+        out = """<div class="item empty">
             <p class="msg">%s</p>
-        </div>""" % (i[0], i[1], escape(i[2]))) + out
-
-    if out == '':
-        out = '<div class="item"><p>(nincs üzenet)</p></div>'
+        </div>""" % (empty)
+    else:
+        for i in texts:
+            out = ("""
+            <div class="item" style="background-color: %s;"> 
+                <div class="sent">%s</div>
+                <div class="sender">%s</div>
+                <p class="msg">%s</p>
+            </div>""" % (colorhash(i[1]), i[0], i[1], escape(i[2]))) + out
+        if out == '':
+            return render(outfile=outfile, empty='nincs üzenet')
 
     out = """<!DOCTYPE html>
     <html lang="en">
@@ -78,8 +89,8 @@ def render(texts, outfile):
                 .sender, .sent {font-size:.8em; color: #666;}
                 .sender {float: left;}
                 .sent {float: right;} 
-                .msg {clear: both; margin: .2em 0 0;} 
-                .item { margin:.5em;padding:.5em; border-radius: .5em; background-color: #ccc;} 
+                .msg {clear: both; margin: 0; padding: .5em; background-color:#fff;border-radius: .5em; } 
+                .item { margin:.5em;padding: .1em; border-radius: .5em; background-color: #ccc;} 
                 body,div {margin:0; padding: 0;font-size: 1cm;}
                 #contact {position: fixed; bottom:0; width: 100%; height:1em;
                 background-color: #000; color: #fff;}
@@ -92,6 +103,10 @@ def render(texts, outfile):
     f.write(out)
     f.close()
 
+def quit_event(self, *args):
+    os.kill(other, signal.SIGTERM)
+    gtk.main_quit()
+
 def browsermain():
     view = webkit.WebView() 
 
@@ -103,6 +118,7 @@ def browsermain():
     win.show_all() 
     win.set_title("SMS-fal")
     win.maximize()
+    win.connect("delete-event", quit_event)
 
     view.open("file://%s" % html[1])
     gtk.main()
@@ -116,7 +132,7 @@ def pollermain():
         f = open(datafile, 'rb')
         texts = pickle.load(f)
         f.close()
-        render(texts, html[1])
+        render(html[1], texts)
     except IOError:
         pass
 
@@ -136,15 +152,17 @@ def pollermain():
                 pickle.dump(texts, f)
                 f.close()
 
-            render(texts, html[1])
+            render(html[1], texts=texts)
 
     tty.close()
 
 html = tempfile.mkstemp(".html")
-render([('', '', 'betöltés...')], html[1])
+render(html[1], empty="betöltés...")
 
-if os.fork() == 0:
-    browsermain()
-else:
+other = os.getpid()
+pid = os.fork()
+if pid == 0:
     pollermain()
-
+else:
+    other = pid
+    browsermain()
