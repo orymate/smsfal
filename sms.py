@@ -194,6 +194,7 @@ def pollermain():
             for i in texts:
                 logf.write("%s\t%s\t%s\n" % i)
             logf.close()
+            do_save_log = False
 
         new = smslist(tty)
         for i in new:
