@@ -132,9 +132,12 @@ def pollermain():
         f = open(datafile, 'rb')
         texts = pickle.load(f)
         f.close()
-        render(html[1], texts)
     except IOError:
-        pass
+        f = open(datafile, 'wb')
+        pickle.dump([], f)
+        f.close()
+
+    render(html[1], texts)
 
 
     while True:
