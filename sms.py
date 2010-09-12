@@ -59,7 +59,14 @@ def humandate(d):
             return '%d perce' % (d.seconds / 60)
 
 def colorhash(number):
-    number = int(number)
+    try:
+        number = int(number)
+    except ValueError:
+        num = 0
+        for i in number:
+            num = num * 11 + ord(i)
+        number = num
+            
     c = (60, (number % 1747) % 101, (number % 1847) % 101)
     return "hsl(%d, %d%%, %d%%)" % c
 
@@ -120,14 +127,17 @@ def render(outfile, texts=None, empty=False):
             <meta charset=utf-8 />
             <title>SMS-fal</title>
             <style>
-                .sender, .sent {font-size:.8em; color: #666; margin: 0 .5em;}
+                .sender, .sent {font-size:.8em; color: #666; margin: 0 .5em;
+                margin-bottom: -1.2em;padding: .1em;}
                 .sender {float: left;}
                 .sent {float: right;} 
-                .msg {clear: both; margin: 0; padding: .5em; background-color:#fff;border-radius: .5em; } 
-                .item { margin:.5em;padding: .1em; border-radius: .5em; background-color: #ccc;} 
+                .msg {clear: both; margin: 0; padding: .5em;
+                background-color:#fff;border-radius: 0 0 .3em .3em; padding-top: 1em;} 
+                .item { margin:.5em;padding: .1em; border-radius: .3em; background-color: #ccc;} 
                 body,div {margin:0; padding: 0;font-size: 1cm;}
                 #contact {position: fixed; bottom:0; width: 100%; height:1em;
-                background-color: #000; color: #fff; margin: 0; padding: .2em;}
+                text-align: center; background-color: #000; color: #fff;
+                margin: 0; padding: .2em;}
                 #contact li {display: inline;margin-right: 2em;}
             </style>
         </head>
