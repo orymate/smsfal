@@ -188,6 +188,7 @@ def pollermain():
 
     log_count = 0
     while not quit:
+        global do_save_log
         if do_save_log:
             log_count = log_count + 1
             logf = open("%s-%d-%d.log" % (datafile, os.getpid(), log_count), "w")
