@@ -10,6 +10,7 @@ import webkit
 import tempfile
 import os
 import signal
+import atexit
 from cgi import escape
 
 
@@ -161,6 +162,7 @@ def pollermain():
     tty.close()
 
 html = tempfile.mkstemp(".html")
+atexit.register(os.unlink, html[1])
 render(html[1], empty="betöltés...")
 
 other = os.getpid()
