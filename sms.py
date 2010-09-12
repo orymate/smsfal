@@ -108,7 +108,7 @@ def render(outfile, texts=None, empty=False):
                 .item { margin:.5em;padding: .1em; border-radius: .5em; background-color: #ccc;} 
                 body,div {margin:0; padding: 0;font-size: 1cm;}
                 #contact {position: fixed; bottom:0; width: 100%; height:1em;
-                background-color: #000; color: #fff;}
+                background-color: #000; color: #fff; margin: 0; padding: .2em;}
                 #contact li {display: inline;margin-right: 2em;}
             </style>
         </head>
@@ -129,9 +129,11 @@ def browsermain():
     sw.add(view) 
 
     win = gtk.Window(gtk.WINDOW_TOPLEVEL) 
+    win.set_default_size(800, 420)
     win.add(sw) 
     win.show_all() 
     win.set_title("SMS-fal")
+    win.set_decorated(False)
     win.maximize()
     win.connect("delete-event", quit_event)
 
