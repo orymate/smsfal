@@ -9,8 +9,8 @@ import gtk
 import webkit 
 import tempfile
 import os
-import signal
 import atexit
+import thread
 from cgi import escape
 
 
@@ -119,7 +119,8 @@ def render(outfile, texts=None, empty=False):
     f.close()
 
 def quit_event(self, *args):
-    os.kill(other, signal.SIGTERM)
+    global quit
+    quit = True
     gtk.main_quit()
 
 def browsermain():
@@ -157,7 +158,7 @@ def pollermain():
     render(html[1], texts)
 
 
-    while True:
+    while not quit:
         new = smslist(tty)
         for i in new:
             texts.append((i.data['date'], i.data['number'], i.data['text']))
@@ -176,14 +177,13 @@ def pollermain():
 
     tty.close()
 
+quit = False
+
 html = tempfile.mkstemp(".html")
 atexit.register(os.unlink, html[1])
 render(html[1], empty="betöltés...")
 
-other = os.getpid()
-pid = os.fork()
-if pid == 0:
-    pollermain()
-else:
-    other = pid
-    browsermain()
+gtk.gdk.threads_init()
+thread.start_new_thread(browsermain, ())
+
+pollermain()
