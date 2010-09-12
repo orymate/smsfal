@@ -78,7 +78,7 @@ def render(outfile, texts=None, empty=False):
                 <div class="sent">%s</div>
                 <div class="sender">%s</div>
                 <p class="msg">%s</p>
-            </div>""" % (colorhash(i[1]), i[0], i[1], escape(i[2]))) + out
+            </div>""" % (colorhash(i[1]), humandate(i[0]), i[1][:-4]+"****", escape(i[2]))) + out
         if out == '':
             return render(outfile=outfile, empty='nincs üzenet')
 
@@ -88,7 +88,7 @@ def render(outfile, texts=None, empty=False):
             <meta charset=utf-8 />
             <title>SMS-fal</title>
             <style>
-                .sender, .sent {font-size:.8em; color: #666;}
+                .sender, .sent {font-size:.8em; color: #666; margin: 0 .5em;}
                 .sender {float: left;}
                 .sent {float: right;} 
                 .msg {clear: both; margin: 0; padding: .5em; background-color:#fff;border-radius: .5em; } 
